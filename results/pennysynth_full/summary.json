@@ -1,0 +1,14 @@
+{
+  "total": 3416,
+  "kept": 444,
+  "rejected": 2972,
+  "pending_extraction": 0,
+  "checkable_fraction_among_decided": 0.12997658079625293,
+  "reject_reasons": {
+    "no_qnode_found": 890,
+    "unsupported_device": 23,
+    "tape_or_export_failed": 1732,
+    "unsupported_control_flow": 66,
+    "truncated_snippet": 261
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "mode": "oracle_gold",
+  "total": 444,
+  "equivalent": 441,
+  "not_equivalent": 3,
+  "failed": 0,
+  "oracle_equivalent_fraction": 0.9932432432432432
+}

@@ -1,0 +1,8 @@
+{
+  "mode": "predictions",
+  "total": 444,
+  "equivalent": 162,
+  "not_equivalent": 187,
+  "failed": 95,
+  "oracle_equivalent_fraction": 0.36486486486486486
+}

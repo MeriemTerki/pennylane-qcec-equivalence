@@ -1,0 +1,303 @@
+{
+  "tag": "gpt-4o",
+  "n_not_equivalent": 187,
+  "counts": {
+    "param_only": 56,
+    "near_mutant": 65,
+    "different_program": 25,
+    "different_width": 41,
+    "same_ops_qcec_disagree": 0,
+    "reextract_failed": 0
+  },
+  "frac": {
+    "param_only": 0.2994652406417112,
+    "near_mutant": 0.34759358288770054,
+    "different_program": 0.13368983957219252,
+    "different_width": 0.2192513368983957,
+    "same_ops_qcec_disagree": 0.0,
+    "reextract_failed": 0.0
+  },
+  "examples": {
+    "param_only": [
+      {
+        "id": "pennysynth_228",
+        "instruction": "Implement a PennyLane quantum circuit with 3 qubits, applying Hadamard, CNOT, and U3 gates, and return the state vector and gate names as JSON.",
+        "n_qubits_ref": 3,
+        "n_qubits_cand": 3,
+        "n_ops_ref": 3,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "h",
+          "cx",
+          "u3"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "u3"
+        ],
+        "bucket": "param_only"
+      },
+      {
+        "id": "pennysynth_253",
+        "instruction": "Implement a PennyLane QNode with 4 wires. Apply RY rotations based on input `phi`, and conditionally apply Hadamard, RY, or CNOT gates based on `filter` value. Return expectation v",
+        "n_qubits_ref": 4,
+        "n_qubits_cand": 4,
+        "n_ops_ref": 4,
+        "n_ops_cand": 4,
+        "ref_gates": [
+          "ry",
+          "ry",
+          "ry",
+          "ry"
+        ],
+        "cand_gates": [
+          "ry",
+          "ry",
+          "ry",
+          "ry"
+        ],
+        "bucket": "param_only"
+      },
+      {
+        "id": "pennysynth_373",
+        "instruction": "Implement a PennyLane quantum circuit with two qubits, RX, RY, and CNOT gates, returning an expectation value, and plot its state and circuit.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 3,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "rx",
+          "ry",
+          "cx"
+        ],
+        "cand_gates": [
+          "rx",
+          "ry",
+          "cx"
+        ],
+        "bucket": "param_only"
+      }
+    ],
+    "near_mutant": [
+      {
+        "id": "pennysynth_189",
+        "instruction": "Write a Python function to test PennyLane CPU devices. Include Hadamard, CNOT gates, 4 wires, and return probabilities.",
+        "n_qubits_ref": 4,
+        "n_qubits_cand": 4,
+        "n_ops_ref": 5,
+        "n_ops_cand": 4,
+        "ref_gates": [
+          "h",
+          "cx",
+          "h",
+          "cx",
+          "cx"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "cx",
+          "cx"
+        ],
+        "bucket": "near_mutant"
+      },
+      {
+        "id": "pennysynth_605",
+        "instruction": "Create a PennyLane QNode with 2 wires, applying Hadamard, CNOT, and RY gates, returning the expectation value of PauliZ(0) tensor PauliZ(1).",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 3,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "h",
+          "cx",
+          "ry"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "ry"
+        ],
+        "bucket": "near_mutant"
+      },
+      {
+        "id": "pennysynth_701",
+        "instruction": "Implement a PennyLane QNode with 4 qubits. Include RX, RY, and CNOT gates, taking inputs and weights, returning two PauliZ expectation values.",
+        "n_qubits_ref": 4,
+        "n_qubits_cand": 4,
+        "n_ops_ref": 6,
+        "n_ops_cand": 6,
+        "ref_gates": [
+          "rx",
+          "ry",
+          "cx",
+          "rx",
+          "cx",
+          "ry"
+        ],
+        "cand_gates": [
+          "rx",
+          "ry",
+          "cx",
+          "rx",
+          "ry",
+          "cx"
+        ],
+        "bucket": "near_mutant"
+      }
+    ],
+    "different_program": [
+      {
+        "id": "pennysynth_181",
+        "instruction": "Implement a PennyLane QNode using 3 wires. Apply conditional Pauli-X gates, Hadamard, Toffoli, and S gates, then return the quantum state.",
+        "n_qubits_ref": 3,
+        "n_qubits_cand": 3,
+        "n_ops_ref": 15,
+        "n_ops_cand": 5,
+        "ref_gates": [
+          "x",
+          "h",
+          "x",
+          "ccx",
+          "x",
+          "x",
+          "h",
+          "ccx",
+          "h",
+          "x",
+          "h",
+          "s"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "cx",
+          "ccx",
+          "s"
+        ],
+        "bucket": "different_program"
+      },
+      {
+        "id": "pennysynth_299",
+        "instruction": "Write a PennyLane QNode on 3 wires applying Hadamard, S, and T gates (and their adjoints) and returning probabilities.",
+        "n_qubits_ref": 3,
+        "n_qubits_cand": 3,
+        "n_ops_ref": 17,
+        "n_ops_cand": 6,
+        "ref_gates": [
+          "h",
+          "h",
+          "h",
+          "s",
+          "t",
+          "tdg",
+          "h",
+          "h",
+          "h",
+          "sdg",
+          "s",
+          "s"
+        ],
+        "cand_gates": [
+          "h",
+          "s",
+          "t",
+          "h",
+          "sdg",
+          "tdg"
+        ],
+        "bucket": "different_program"
+      },
+      {
+        "id": "pennysynth_750",
+        "instruction": "Build a PennyLane quantum circuit on 2 wires using Hadamard, CNOT, and PauliX gates, returning the probabilities of all qubit states.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 16,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "h",
+          "h",
+          "h",
+          "cx",
+          "h",
+          "h",
+          "x",
+          "h",
+          "x",
+          "h",
+          "cx",
+          "x"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "x"
+        ],
+        "bucket": "different_program"
+      }
+    ],
+    "different_width": [
+      {
+        "id": "pennysynth_5817",
+        "instruction": "Implement a PennyLane QNode on a single qubit. Use `RandomLayers` and return the expectation value of PauliZ.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 1,
+        "n_ops_ref": 2,
+        "n_ops_cand": 2,
+        "ref_gates": [
+          "ry",
+          "rx"
+        ],
+        "cand_gates": [
+          "ry",
+          "ry"
+        ],
+        "bucket": "different_width"
+      },
+      {
+        "id": "pennysynth_6404",
+        "instruction": "Write a PennyLane QNode implementing a 4-wire layer with Hadamard and CNOT gates, taking a list of wire indices as input.",
+        "n_qubits_ref": 8,
+        "n_qubits_cand": 4,
+        "n_ops_ref": 6,
+        "n_ops_cand": 4,
+        "ref_gates": [
+          "h",
+          "h",
+          "cx",
+          "cx",
+          "h",
+          "h"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "h",
+          "cx"
+        ],
+        "bucket": "different_width"
+      },
+      {
+        "id": "pennysynth_8350",
+        "instruction": "Write a PennyLane function `pulse_odegen` that decomposes a quantum script's operations into parameterized pulses for gradient calculation, returning a batch of scripts and a postp",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 1,
+        "n_ops_ref": 3,
+        "n_ops_cand": 2,
+        "ref_gates": [
+          "rx",
+          "ry",
+          "cx"
+        ],
+        "cand_gates": [
+          "rx",
+          "ry"
+        ],
+        "bucket": "different_width"
+      }
+    ],
+    "same_ops_qcec_disagree": []
+  }
+}

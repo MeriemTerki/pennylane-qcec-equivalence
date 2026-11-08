@@ -1,0 +1,320 @@
+{
+  "tag": "gpt-4o-mini",
+  "n_not_equivalent": 227,
+  "counts": {
+    "param_only": 53,
+    "near_mutant": 80,
+    "different_program": 30,
+    "different_width": 63,
+    "same_ops_qcec_disagree": 1,
+    "reextract_failed": 0
+  },
+  "frac": {
+    "param_only": 0.23348017621145375,
+    "near_mutant": 0.3524229074889868,
+    "different_program": 0.13215859030837004,
+    "different_width": 0.2775330396475771,
+    "same_ops_qcec_disagree": 0.004405286343612335,
+    "reextract_failed": 0.0
+  },
+  "examples": {
+    "param_only": [
+      {
+        "id": "pennysynth_228",
+        "instruction": "Implement a PennyLane quantum circuit with 3 qubits, applying Hadamard, CNOT, and U3 gates, and return the state vector and gate names as JSON.",
+        "n_qubits_ref": 3,
+        "n_qubits_cand": 3,
+        "n_ops_ref": 3,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "h",
+          "cx",
+          "u3"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "u3"
+        ],
+        "bucket": "param_only"
+      },
+      {
+        "id": "pennysynth_373",
+        "instruction": "Implement a PennyLane quantum circuit with two qubits, RX, RY, and CNOT gates, returning an expectation value, and plot its state and circuit.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 3,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "rx",
+          "ry",
+          "cx"
+        ],
+        "cand_gates": [
+          "rx",
+          "ry",
+          "cx"
+        ],
+        "bucket": "param_only"
+      },
+      {
+        "id": "pennysynth_885",
+        "instruction": "Implement a PennyLane function `run` that takes a JSON string of parameters and a shift value, calculates a parameter-shift gradient for an RY gate on a single qubit, and returns t",
+        "n_qubits_ref": 1,
+        "n_qubits_cand": 1,
+        "n_ops_ref": 1,
+        "n_ops_cand": 1,
+        "ref_gates": [
+          "ry"
+        ],
+        "cand_gates": [
+          "ry"
+        ],
+        "bucket": "param_only"
+      }
+    ],
+    "near_mutant": [
+      {
+        "id": "pennysynth_130",
+        "instruction": "Create a PennyLane quantum circuit with two wires, apply a CZ gate, and return the quantum state.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 1,
+        "n_ops_cand": 2,
+        "ref_gates": [
+          "cz"
+        ],
+        "cand_gates": [
+          "h",
+          "cz"
+        ],
+        "bucket": "near_mutant"
+      },
+      {
+        "id": "pennysynth_177",
+        "instruction": "Write a PennyLane QNode to compute the second R\u00e9nyi entropy of subsystems A (wire 1) for two circuits: one with Hadamard and CNOT, and another with Hadamard, CRY, Toffoli, CNOT, an",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 3,
+        "n_ops_cand": 2,
+        "ref_gates": [
+          "h",
+          "x",
+          "cx"
+        ],
+        "cand_gates": [
+          "h",
+          "cx"
+        ],
+        "bucket": "near_mutant"
+      },
+      {
+        "id": "pennysynth_189",
+        "instruction": "Write a Python function to test PennyLane CPU devices. Include Hadamard, CNOT gates, 4 wires, and return probabilities.",
+        "n_qubits_ref": 4,
+        "n_qubits_cand": 4,
+        "n_ops_ref": 5,
+        "n_ops_cand": 4,
+        "ref_gates": [
+          "h",
+          "cx",
+          "h",
+          "cx",
+          "cx"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "cx",
+          "cx"
+        ],
+        "bucket": "near_mutant"
+      }
+    ],
+    "different_program": [
+      {
+        "id": "pennysynth_299",
+        "instruction": "Write a PennyLane QNode on 3 wires applying Hadamard, S, and T gates (and their adjoints) and returning probabilities.",
+        "n_qubits_ref": 3,
+        "n_qubits_cand": 3,
+        "n_ops_ref": 17,
+        "n_ops_cand": 6,
+        "ref_gates": [
+          "h",
+          "h",
+          "h",
+          "s",
+          "t",
+          "tdg",
+          "h",
+          "h",
+          "h",
+          "sdg",
+          "s",
+          "s"
+        ],
+        "cand_gates": [
+          "h",
+          "s",
+          "t",
+          "sdg",
+          "tdg",
+          "h"
+        ],
+        "bucket": "different_program"
+      },
+      {
+        "id": "pennysynth_701",
+        "instruction": "Implement a PennyLane QNode with 4 qubits. Include RX, RY, and CNOT gates, taking inputs and weights, returning two PauliZ expectation values.",
+        "n_qubits_ref": 4,
+        "n_qubits_cand": 4,
+        "n_ops_ref": 6,
+        "n_ops_cand": 10,
+        "ref_gates": [
+          "rx",
+          "ry",
+          "cx",
+          "rx",
+          "cx",
+          "ry"
+        ],
+        "cand_gates": [
+          "rx",
+          "ry",
+          "rx",
+          "ry",
+          "rx",
+          "ry",
+          "rx",
+          "ry",
+          "cx",
+          "cx"
+        ],
+        "bucket": "different_program"
+      },
+      {
+        "id": "pennysynth_750",
+        "instruction": "Build a PennyLane quantum circuit on 2 wires using Hadamard, CNOT, and PauliX gates, returning the probabilities of all qubit states.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 16,
+        "n_ops_cand": 3,
+        "ref_gates": [
+          "h",
+          "h",
+          "h",
+          "cx",
+          "h",
+          "h",
+          "x",
+          "h",
+          "x",
+          "h",
+          "cx",
+          "x"
+        ],
+        "cand_gates": [
+          "h",
+          "cx",
+          "x"
+        ],
+        "bucket": "different_program"
+      }
+    ],
+    "different_width": [
+      {
+        "id": "pennysynth_733",
+        "instruction": "Write a Python function `process_quantum_data` that encodes data into quantum circuits using RX gates and Strongly Entangling Layers, returning expectation values of PauliZ.",
+        "n_qubits_ref": 1,
+        "n_qubits_cand": 2,
+        "n_ops_ref": 4,
+        "n_ops_cand": 16,
+        "ref_gates": [
+          "rx",
+          "rz",
+          "ry",
+          "rz"
+        ],
+        "cand_gates": [
+          "rx",
+          "rx",
+          "rx",
+          "rx",
+          "rx",
+          "rx",
+          "rx",
+          "rx",
+          "cx",
+          "ry",
+          "ry",
+          "cx"
+        ],
+        "bucket": "different_width"
+      },
+      {
+        "id": "pennysynth_5817",
+        "instruction": "Implement a PennyLane QNode on a single qubit. Use `RandomLayers` and return the expectation value of PauliZ.",
+        "n_qubits_ref": 2,
+        "n_qubits_cand": 1,
+        "n_ops_ref": 2,
+        "n_ops_cand": 2,
+        "ref_gates": [
+          "ry",
+          "rx"
+        ],
+        "cand_gates": [
+          "ry",
+          "ry"
+        ],
+        "bucket": "different_width"
+      },
+      {
+        "id": "pennysynth_6404",
+        "instruction": "Write a PennyLane QNode implementing a 4-wire layer with Hadamard and CNOT gates, taking a list of wire indices as input.",
+        "n_qubits_ref": 8,
+        "n_qubits_cand": 5,
+        "n_ops_ref": 6,
+        "n_ops_cand": 9,
+        "ref_gates": [
+          "h",
+          "h",
+          "cx",
+          "cx",
+          "h",
+          "h"
+        ],
+        "cand_gates": [
+          "h",
+          "h",
+          "h",
+          "h",
+          "h",
+          "cx",
+          "cx",
+          "cx",
+          "cx"
+        ],
+        "bucket": "different_width"
+      }
+    ],
+    "same_ops_qcec_disagree": [
+      {
+        "id": "pennysynth_7776",
+        "instruction": "Implement a PennyLane QNode on one qubit that applies Hadamard and RZ(5\u03c0/4) gates, returning the quantum state.",
+        "n_qubits_ref": 1,
+        "n_qubits_cand": 1,
+        "n_ops_ref": 2,
+        "n_ops_cand": 2,
+        "ref_gates": [
+          "h",
+          "rz"
+        ],
+        "cand_gates": [
+          "h",
+          "rz"
+        ],
+        "bucket": "same_ops_qcec_disagree"
+      }
+    ]
+  }
+}
