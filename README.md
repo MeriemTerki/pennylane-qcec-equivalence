@@ -15,7 +15,7 @@ It does **not** reproduce the full VeriThoughts data-generation and training pip
 | Label \(L_C = E(V, V^*)\) | Yes: QCEC(gold circuit, model circuit) |
 | Train on \(\{V, Q, R, V^*, L_C\}\) | **Not done** |
 
-**Affiliation:** eBRAIN Lab, NYU Abu Dhabi.
+
 
 ---
 
@@ -39,7 +39,7 @@ PennySynth JSONL
 3. **Model scoring (optional eval, not the paper).** An LLM writes PennyLane from the **existing** instruction; we extract its circuit and compare it to the gold circuit with QCEC.
 4. **Error analysis.** Failed extracts vs not-equivalent circuits; among not-equivalent, close mutants vs different programs.
 
-QHack / QTestBench is **out of this repo**. It is a later evaluation set, not the training-style corpus.
+
 
 ---
 
