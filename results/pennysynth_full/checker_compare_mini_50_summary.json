@@ -1,0 +1,44 @@
+{
+  "n_pairs": 48,
+  "checkers": {
+    "qcec": {
+      "completion_rate": 1.0,
+      "reference_consistent_rate_vs_qcec": 1.0,
+      "comparable_to_qcec": 48,
+      "mean_runtime_seconds": 0.7508193916666812,
+      "decisions": {
+        "not_equivalent": 24,
+        "equivalent": 24
+      }
+    },
+    "unitary_fidelity": {
+      "completion_rate": 1.0,
+      "reference_consistent_rate_vs_qcec": 1.0,
+      "comparable_to_qcec": 48,
+      "mean_runtime_seconds": 0.0011011166666889949,
+      "decisions": {
+        "not_equivalent": 24,
+        "equivalent": 24
+      }
+    },
+    "basis_statevector": {
+      "completion_rate": 1.0,
+      "reference_consistent_rate_vs_qcec": 0.9791666666666666,
+      "comparable_to_qcec": 48,
+      "mean_runtime_seconds": 0.0006686458333338882,
+      "decisions": {
+        "not_equivalent": 23,
+        "equivalent": 25
+      }
+    }
+  },
+  "qcec_vs_unitary_fidelity": {
+    "agree": 48,
+    "disagree": 0,
+    "unitary_equiv_but_qcec_not": 0,
+    "unitary_not_but_qcec_equiv": 0
+  },
+  "total_rows": 50,
+  "extract_failed": 2,
+  "wall_seconds": 37.69228989999965
+}

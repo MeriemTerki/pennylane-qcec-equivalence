@@ -1,0 +1,45 @@
+{
+  "n_pairs": 377,
+  "checkers": {
+    "qcec": {
+      "completion_rate": 0.9973474801061007,
+      "reference_consistent_rate_vs_qcec": 1.0,
+      "comparable_to_qcec": 376,
+      "mean_runtime_seconds": 0.6942121474801074,
+      "decisions": {
+        "not_equivalent": 226,
+        "equivalent": 150,
+        "undecided": 1
+      }
+    },
+    "unitary_fidelity": {
+      "completion_rate": 1.0,
+      "reference_consistent_rate_vs_qcec": 0.9680851063829787,
+      "comparable_to_qcec": 376,
+      "mean_runtime_seconds": 0.0008439694960114003,
+      "decisions": {
+        "not_equivalent": 238,
+        "equivalent": 139
+      }
+    },
+    "basis_statevector": {
+      "completion_rate": 1.0,
+      "reference_consistent_rate_vs_qcec": 0.949468085106383,
+      "comparable_to_qcec": 376,
+      "mean_runtime_seconds": 0.0004655713527781627,
+      "decisions": {
+        "not_equivalent": 231,
+        "equivalent": 146
+      }
+    }
+  },
+  "qcec_vs_unitary_fidelity": {
+    "agree": 364,
+    "disagree": 12,
+    "unitary_equiv_but_qcec_not": 0,
+    "unitary_not_but_qcec_equiv": 12
+  },
+  "total_rows": 444,
+  "extract_failed": 67,
+  "wall_seconds": 270.3331696000005
+}

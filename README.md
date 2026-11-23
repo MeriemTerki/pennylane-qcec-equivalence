@@ -229,6 +229,19 @@ Upstream data (not shipped here):
 
 ---
 
+## Paper equivalence metrics (supervisor request)
+
+Local PDFs in `Papers/`. See [`docs/PAPERS_AND_METRICS.md`](docs/PAPERS_AND_METRICS.md).
+
+On the **same** gold vs model pairs as your QCEC run:
+
+1. **QCEC** — formal label (`run_verithoughts_loop.py`)
+2. **Numeric metrics** from the papers — Pauli miter \(r_M\), generator \(r_G\), process fidelity, etc. (`run_equivalence_metrics.py`)
+
+Each JSONL row has `metrics` floats next to `qcec.decision` for tables/plots. VeriThoughts remains the Verilog inspiration; these PDFs supply the **equivalence formulas**.
+
+**Start here if you are lost:** [`docs/METRICS_RESULTS_REPORT.md`](docs/METRICS_RESULTS_REPORT.md) (generated after `run_equivalence_metrics.py`).
+
 ## What a fair next step looks like (not in this repo yet)
 
 To follow VeriThoughts **the same way** (and only then compare *methods*, not raw percentages):

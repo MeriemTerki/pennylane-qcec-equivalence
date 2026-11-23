@@ -1,0 +1,8 @@
+{
+  "mode": "predictions",
+  "total": 3,
+  "equivalent": 0,
+  "not_equivalent": 2,
+  "failed": 1,
+  "oracle_equivalent_fraction": 0.0
+}

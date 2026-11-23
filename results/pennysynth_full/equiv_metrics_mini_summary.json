@@ -1,0 +1,126 @@
+{
+  "n_ok": 377,
+  "n_total": 444,
+  "extract_failed": 67,
+  "thresholds": {
+    "xia_pauli_epsilon": 1e-10,
+    "manjushri_notes": 1e-15,
+    "mpo_prr_notes": 1e-13
+  },
+  "qcec_decisions": {
+    "not_equivalent": 227,
+    "equivalent": 150
+  },
+  "metric_vs_qcec": {
+    "process_fidelity": {
+      "comparable": 302,
+      "agreement_with_qcec": 0.9966887417218543
+    },
+    "process_fidelity_manjushri_tol": {
+      "comparable": 302,
+      "agreement_with_qcec": 1.0
+    },
+    "pauli_miter_l2_residual": {
+      "comparable": 302,
+      "agreement_with_qcec": 0.9966887417218543
+    },
+    "pauli_generator_l2_residual_X": {
+      "comparable": 302,
+      "agreement_with_qcec": 0.8344370860927153
+    },
+    "pauli_generator_max_rG_2n": {
+      "comparable": 302,
+      "agreement_with_qcec": 1.0
+    },
+    "min_basis_state_fidelity": {
+      "comparable": 302,
+      "agreement_with_qcec": 0.9966887417218543
+    },
+    "hilbert_schmidt_residual": {
+      "comparable": 302,
+      "agreement_with_qcec": 0.9966887417218543
+    }
+  },
+  "metric_value_stats": {
+    "process_fidelity": {
+      "mean": 0.712192965474138,
+      "min": 0.0,
+      "max": 1.0000000000000004
+    },
+    "process_fidelity_manjushri_tol": {
+      "mean": 0.712192965474138,
+      "min": 0.0,
+      "max": 1.0000000000000004
+    },
+    "pauli_miter_l2_residual": {
+      "mean": 0.34958224926231635,
+      "min": 0.0,
+      "max": 1.0
+    },
+    "pauli_generator_l2_residual_X": {
+      "mean": 0.32795715221770605,
+      "min": 0.0,
+      "max": 1.9999999999999998
+    },
+    "pauli_generator_max_rG_2n": {
+      "mean": 0.6048002828131668,
+      "min": 0.0,
+      "max": 2.0
+    },
+    "min_basis_state_fidelity": {
+      "mean": 0.7321406899255142,
+      "min": 0.0,
+      "max": 1.0
+    },
+    "hilbert_schmidt_residual": {
+      "mean": 0.2878070345258619,
+      "min": -4.440892098500626e-16,
+      "max": 1.0
+    }
+  },
+  "metric_by_qcec_group": {
+    "process_fidelity": {
+      "when_qcec_equivalent_mean": 0.9999999999999996,
+      "when_qcec_not_equivalent_mean": 0.47001387544627893,
+      "n_eq": 138,
+      "n_neq": 164
+    },
+    "process_fidelity_manjushri_tol": {
+      "when_qcec_equivalent_mean": 0.9999999999999996,
+      "when_qcec_not_equivalent_mean": 0.47001387544627893,
+      "n_eq": 138,
+      "n_neq": 164
+    },
+    "pauli_miter_l2_residual": {
+      "when_qcec_equivalent_mean": 0.0,
+      "when_qcec_not_equivalent_mean": 0.6437429224220703,
+      "n_eq": 138,
+      "n_neq": 164
+    },
+    "pauli_generator_l2_residual_X": {
+      "when_qcec_equivalent_mean": 0.0,
+      "when_qcec_not_equivalent_mean": 0.6039210973765075,
+      "n_eq": 138,
+      "n_neq": 164
+    },
+    "pauli_generator_max_rG_2n": {
+      "when_qcec_equivalent_mean": 0.0,
+      "when_qcec_not_equivalent_mean": 1.1137175939608315,
+      "n_eq": 138,
+      "n_neq": 164
+    },
+    "min_basis_state_fidelity": {
+      "when_qcec_equivalent_mean": 0.9999999999999996,
+      "when_qcec_not_equivalent_mean": 0.5067468802286909,
+      "n_eq": 138,
+      "n_neq": 164
+    },
+    "hilbert_schmidt_residual": {
+      "when_qcec_equivalent_mean": 3.314578885112786e-16,
+      "when_qcec_not_equivalent_mean": 0.5299861245537211,
+      "n_eq": 138,
+      "n_neq": 164
+    }
+  },
+  "wall_seconds": 335.5798471999997
+}

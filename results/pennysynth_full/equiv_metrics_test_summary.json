@@ -1,0 +1,63 @@
+{
+  "n_ok": 4,
+  "n_total": 5,
+  "extract_failed": 1,
+  "thresholds": {
+    "xia_pauli_epsilon": 1e-10,
+    "manjushri_notes": 1e-15,
+    "mpo_prr_notes": 1e-13
+  },
+  "qcec_decisions": {
+    "not_equivalent": 4
+  },
+  "metric_vs_qcec": {
+    "process_fidelity": {
+      "comparable": 4,
+      "agreement_with_qcec": 0.5
+    },
+    "pauli_miter_l2_residual": {
+      "comparable": 4,
+      "agreement_with_qcec": 1.0
+    },
+    "pauli_generator_l2_residual_X": {
+      "comparable": 4,
+      "agreement_with_qcec": 0.25
+    },
+    "min_basis_state_fidelity": {
+      "comparable": 4,
+      "agreement_with_qcec": 0.25
+    },
+    "hilbert_schmidt_residual": {
+      "comparable": 4,
+      "agreement_with_qcec": 1.0
+    }
+  },
+  "metric_value_stats": {
+    "process_fidelity": {
+      "mean": 0.1624840544619742,
+      "min": 0.0,
+      "max": 0.6186862178478968
+    },
+    "pauli_miter_l2_residual": {
+      "mean": 0.9004392707824856,
+      "min": 0.6175060988784666,
+      "max": 0.9999999999999999
+    },
+    "pauli_generator_l2_residual_X": {
+      "mean": 0.28231798656484086,
+      "min": 0.0,
+      "max": 1.1292719462593634
+    },
+    "min_basis_state_fidelity": {
+      "mean": 0.34374999999999983,
+      "min": 0.0,
+      "max": 0.7499999999999996
+    },
+    "hilbert_schmidt_residual": {
+      "mean": 0.8375159455380258,
+      "min": 0.3813137821521032,
+      "max": 1.0
+    }
+  },
+  "wall_seconds": 8.863973700000315
+}
