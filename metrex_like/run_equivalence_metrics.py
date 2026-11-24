@@ -192,28 +192,6 @@ def main() -> None:
     print(f"Wrote {out}")
     print(f"Wrote {summary_path}")
 
-    if args.predictions and "preds_openrouter_gpt4o" in (args.predictions or ""):
-        tag = "gpt-4o preds"
-    elif args.predictions:
-        tag = "gpt-4o-mini preds"
-    else:
-        tag = "oracle gold vs gold"
-    report_py = Path(__file__).with_name("write_metrics_report.py")
-    if report_py.exists():
-        import subprocess
-        import sys
-
-        subprocess.check_call(
-            [
-                sys.executable,
-                str(report_py),
-                "--summary",
-                str(summary_path),
-                "--predictions-tag",
-                tag,
-            ]
-        )
-
 
 if __name__ == "__main__":
     main()

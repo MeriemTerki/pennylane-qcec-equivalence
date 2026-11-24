@@ -1,79 +1,52 @@
-# Equivalence results: QCEC + paper metrics (how to read this)
+# How to read the metric results
 
-**Data:** PennySynth kept corpus, model = gpt-4o-mini preds.
+This page is the short version of [SIDE_BY_SIDE_EQUIVALENCE.md](SIDE_BY_SIDE_EQUIVALENCE.md) and [NUMERICAL_METRICS.md](NUMERICAL_METRICS.md).
 
-## Where the files are
+**Data:** 444 kept PennySynth programs, gpt-4o-mini model code.
 
-| File | What it contains |
+## Files
+
+| File | What it is |
 |---|---|
-| `results/pennysynth_full/loop_openrouter_v2.jsonl` | **QCEC only** (older script); each row: equivalent / not / extract fail |
-| `results/pennysynth_full/loop_openrouter_v2_summary.json` | QCEC totals: **150** eq, **227** neq, **67** fail (444 total) |
-| `results/pennysynth_full/equiv_metrics_mini.jsonl` | **QCEC + all numeric metrics** per sample (one JSON object per line) |
-| `results/pennysynth_full/equiv_metrics_mini_summary.json` | Aggregates: agreement with QCEC, means, breakdown |
-| This file | Plain-language interpretation |
+| `results/pennysynth_full/loop_openrouter_v2.jsonl` | QCEC only, current extractor |
+| `results/pennysynth_full/loop_openrouter_v2_summary.json` | 150 equivalent, 227 not equivalent, 67 extract failures |
+| `results/pennysynth_full/equiv_metrics_mini.jsonl` | QCEC decision and every numerical metric, one sample per line |
+| `results/pennysynth_full/equiv_metrics_mini_summary.json` | agreement with QCEC, and mean values split by the QCEC label |
 
-## The pipeline in one sentence
+## Pipeline
 
-For each kept sample: extract **gold** circuit and **model** circuit → ask **MQT QCEC** (formal yes/no) → compute **numbers** from paper formulas (fidelity, Pauli residuals) on the same two circuits.
+For each kept sample the gold program and the model program are turned into circuits. QCEC compares them. The same two circuits are then scored with fidelity and Pauli residuals. A cutoff on each number produces a second equivalent / not equivalent label.
 
-## QCEC (your main checker)
+## QCEC
 
-- Rows scored: **377** / 444 (67 failed to extract model or gold)
-- QCEC says **equivalent**: 150
-- QCEC says **not equivalent**: 227
+- 377 / 444 pairs extracted
+- **150** equivalent, **227** not equivalent
+- 67 model programs did not become a circuit
 
-This is the result you already had. Metrics do **not** replace QCEC; they sit beside it.
+## Metric labels versus QCEC
 
-## What each metric means (and how to read the value)
+Among pairs where both QCEC and that metric returned a yes or no (302 pairs for the metrics that all ran):
 
-| Metric | Bigger or smaller is “more equivalent”? | If value means… |
-|---|---|---|
-| `process_fidelity` | **Closer to 1** = more alike | 1.0 = same unitary up to global phase; 0 = very different |
-| `process_fidelity_manjushri_tol` | Same number as above; **stricter** rule (≥ 1 − 10⁻¹⁵) | Manjushri paper tolerance |
-| `pauli_miter_l2_residual` | **Closer to 0** = more alike | Xia paper: miter residual r_M on U₂†U₁ |
-| `pauli_generator_max_rG_2n` | **Closer to 0** = more alike | Max r_G over 2n Pauli generators (Xᵢ, Zᵢ) |
-| `pauli_generator_l2_residual_X` | **Closer to 0** | Only one generator (X on qubit 0) — weak witness |
-| `min_basis_state_fidelity` | **Closer to 1** | Simulation on basis/random states — weaker than QCEC |
-| `hilbert_schmidt_residual` | **Closer to 0** | Same information as 1 − process_fidelity |
+| Metric | Same decision as QCEC |
+|---|---:|
+| Process fidelity | 99.7% |
+| Process fidelity, cutoff \(10^{-15}\) | 100% |
+| Pauli miter residual | 99.7% |
+| Largest generator residual | 100% |
+| Minimum basis-state fidelity | 99.7% |
+| Hilbert–Schmidt residual | 99.7% |
+| \(X\) on qubit 0 only | 83.4% |
 
-In `equiv_metrics_mini.jsonl`, each row has:
+## Means by QCEC label
 
-- `qcec.decision` → `equivalent` | `not_equivalent`
-- `metrics` → floats
-- `metric_labels` → `true` / `false` meaning “this metric would call it equivalent” at the paper threshold
+| Metric | Mean when QCEC equivalent | Mean when QCEC not equivalent |
+|---|---:|---:|
+| Process fidelity | 1.00 | 0.47 |
+| Pauli miter residual | 0.00 | 0.64 |
+| Largest generator residual | 0.00 | 1.11 |
+| Minimum basis-state fidelity | 1.00 | 0.51 |
+| Hilbert–Schmidt residual | ~0 | 0.53 |
 
-## Do the paper metrics agree with QCEC?
+Fidelity near 1 and residual near 0 means the circuits match. The drop in fidelity and the rise in residual, when QCEC says not equivalent, is the numerical picture of a mismatch.
 
-(Among pairs where QCEC and the metric both returned equiv or not-equiv.)
-
-- **process_fidelity**: 99.7% agree with QCEC (302 pairs)
-- **process_fidelity_manjushri_tol**: 100.0% agree with QCEC (302 pairs)
-- **pauli_miter_l2_residual**: 99.7% agree with QCEC (302 pairs)
-- **pauli_generator_l2_residual_X**: 83.4% agree with QCEC (302 pairs)
-- **pauli_generator_max_rG_2n**: 100.0% agree with QCEC (302 pairs)
-- **min_basis_state_fidelity**: 99.7% agree with QCEC (302 pairs)
-- **hilbert_schmidt_residual**: 99.7% agree with QCEC (302 pairs)
-
-**How to interpret agreement:**
-
-- **High agreement** (e.g. Pauli miter ~99%): the formula track formal equivalence well on this corpus.
-- **Lower agreement** on `pauli_generator_l2_residual_X` only (~83%): one Pauli generator is a weak witness; **`pauli_generator_max_rG_2n` matches QCEC 100%** on comparable pairs.
-
-## Average metric values when QCEC says equivalent vs not
-
-- **process_fidelity**: mean = 0.9999999999999996 when QCEC=eq (n=138); mean = 0.47001387544627893 when QCEC=neq (n=164)
-- **process_fidelity_manjushri_tol**: mean = 0.9999999999999996 when QCEC=eq (n=138); mean = 0.47001387544627893 when QCEC=neq (n=164)
-- **pauli_miter_l2_residual**: mean = 0.0 when QCEC=eq (n=138); mean = 0.6437429224220703 when QCEC=neq (n=164)
-- **pauli_generator_l2_residual_X**: mean = 0.0 when QCEC=eq (n=138); mean = 0.6039210973765075 when QCEC=neq (n=164)
-- **pauli_generator_max_rG_2n**: mean = 0.0 when QCEC=eq (n=138); mean = 1.1137175939608315 when QCEC=neq (n=164)
-- **min_basis_state_fidelity**: mean = 0.9999999999999996 when QCEC=eq (n=138); mean = 0.5067468802286909 when QCEC=neq (n=164)
-- **hilbert_schmidt_residual**: mean = 3.314578885112786e-16 when QCEC=eq (n=138); mean = 0.5299861245537211 when QCEC=neq (n=164)
-
-You should see **high fidelity / low Pauli residual** when QCEC=equivalent, and **lower fidelity / higher residual** when QCEC=not_equivalent.
-
-## What is *not* in this report
-
-- Full Manjushri WBDD tool, sparse Pauli engine from Xia’s paper, MPO residual as a separate number, VeriThoughts training metrics.
-- Those need extra tools or different data; see `PAPERS_AND_METRICS.md`.
-
-*Generated from ../results/pennysynth_full/equiv_metrics_mini_summary.json*
+The \(X\)-on-qubit-0 residual is the exception: a value near 0 does not mean the circuits are equivalent.

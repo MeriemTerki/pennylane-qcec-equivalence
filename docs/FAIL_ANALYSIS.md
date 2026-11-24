@@ -1,29 +1,43 @@
-# Why 124 model samples failed extract/export
+# Extract failures on model code
 
-Source: `filter_out/pennysynth_full/loop_openrouter.jsonl` (gpt-4o-mini vs kept gold).
+First full QCEC run of **gpt-4o-mini** on the 444 kept programs (`loop_openrouter.jsonl`):
 
-## Split (before extractor fixes)
+| | Count |
+|---|---:|
+| Equivalent | 124 (28%) |
+| Not equivalent | 196 |
+| Extract or export failed | 124 |
 
-| Bucket | N | Whose problem? |
+## Why those 124 failed
+
+| Cause | About | Where the fault was |
 |---|---:|---|
-| OpenQASM got an array param (`needed an expression, but instead saw [`) | 45 | **Extractor** — dummy args were numpy vectors; QASM cannot print `[0.2 0.4]` |
-| No QNode after lift (class methods, helper-only snippets) | 14 | Mixed — often model wrapped QNode in `nn.Module` |
-| Missing names (`circuit` / helpers not defined) | ~15 | **Model** — incomplete code |
-| Stale APIs (`.inv()`, `.condition`, wrong kwargs) | ~10 | **Model** (we now rewrite `.inv()` → `qml.adjoint`) |
-| Wrong PennyLane signatures / empty tape / other | rest | Mostly **model** |
+| OpenQASM saw a numpy array (`[0.2 0.4]`) | 45 | Extractor dummy inputs |
+| No QNode after the lift (class wrappers, helpers only) | 14 | Often the model |
+| Names used but not defined | ~15 | Model, incomplete code |
+| Old PennyLane calls (`.inv()`, bad kwargs) | ~10 | Model; `.inv()` is now rewritten |
+| Other signature or empty-tape errors | rest | Mostly the model |
 
-## What we changed in `extract_circuit.py`
+## Extractor changes
 
-- Dummy arguments: prefer scalars / strings (`phi=0.5`, `filter="H"`) instead of arrays
-- `_scalarize_tape`: force gate params to floats before `to_openqasm`
-- `_modernize_pennylane`: `qml.T(...).inv()` → `qml.adjoint(qml.T)(...)`
+In `extract_circuit.py`:
 
-Re-extract on the same 124 model programs recovered **57/124** at extract time.
+- dummy arguments are scalars or strings (`phi=0.5`, `filter="H"`), not arrays
+- gate parameters are forced to floats before OpenQASM export
+- `qml.T(...).inv()` is rewritten to `qml.adjoint(qml.T)(...)`
 
-Full QCEC rescore on all 444 (`loop_openrouter_v2.jsonl`, same predictions):
+The same 124 programs were extracted again: **57 / 124** then exported.
 
-| | v1 | v2 (fixed extractor) |
+## Rescore of all 444 (same mini predictions)
+
+| | Before | After |
 |---|---:|---:|
-| Equivalent | 124 | **150** (34%) |
+| Equivalent | 124 | **150 (34%)** |
 | Not equivalent | 196 | 227 |
 | Failed | 124 | **67** |
+
+File after the fix: `results/pennysynth_full/loop_openrouter_v2.jsonl`.
+
+Most of the 57 recovered programs became **not equivalent**. The model had written a different circuit; the checker could finally see it. **26** became equivalent.
+
+The remaining 67 failures are mostly code that still has no QNode, missing names, or a PennyLane call the extractor does not run. They are not a QCEC timeout.

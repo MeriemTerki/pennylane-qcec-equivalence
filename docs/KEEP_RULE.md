@@ -1,37 +1,36 @@
-# Frozen keep rule (do not change without noting it)
+# Keep rule
 
-A sample is **kept** iff all of the following succeed:
+A PennySynth program is **kept** only when every step below succeeds. This rule is fixed for the results in this repository.
 
-1. **Extract** a PennyLane QNode / tape from the code snippet (AST-lifted QNode; no full-file exec)  
-2. **Export** to OpenQASM → Qiskit `QuantumCircuit`  
-3. **Size gate** (corpus default): ≤ 12 qubits and ≤ 200 ops (configurable; not a QCEC failure)  
-4. **QCEC self-check**: `qcec.verify(C, C)` is equivalent  
+1. **Extract** a PennyLane QNode from the snippet. The extractor lifts the QNode from the syntax tree. It does not execute the whole file.
+2. **Export** the circuit to OpenQASM, then to a Qiskit `QuantumCircuit`.
+3. **Size.** At most 12 qubits and 200 operations.
+4. **QCEC self-check.** `qcec.verify(C, C)` returns equivalent.
 
-A sample is **rejected** if any of those fail (no QNode, empty tape, export error, too large, QCEC self-fail).
+If any step fails, the program is **rejected**. Typical reasons: no QNode, empty tape, export error, too large, or the self-check fails.
 
-## Explicitly soft (flag only, never hard-reject)
+## Recorded, but never used to reject
 
-- **Mutant check** (`C` vs `C` with an X on qubit 0): store `mutant_detected` as `true` / `false` / `null`  
-- Dynamic-circuit / measurement quirks may make the mutant check error; that does **not** reject the sample
+- **Mutant check.** Compare `C` with the same circuit plus an `X` on qubit 0. The flag `mutant_detected` may be true, false, or null.
+- Errors on dynamic circuits or measurements during that mutant check do not reject the sample.
 
-## Corpus policy
+## Which data this rule was applied to
 
-| Use | Dataset |
+| Role | Data |
 |---|---|
-| Main MetRex-like corpus | PennySynth `kept.jsonl` after this rule |
-| Secondary / footnote | PennyLang filtered kept only |
-| Evaluation later | QHack / QTestBench (not this filter) |
+| Main corpus | PennySynth, output `results/pennysynth_full/kept.jsonl` (444 programs) |
+| Not used in the reported scores | PennyLang pilot, QHack / QTestBench |
 
-CLI that produces the frozen corpus:
+Rebuild from a local PennySynth file:
 
-```bash
-cd Implementation
-python equivalence_probe/metrex_like/filter_corpus.py \
-  --input pennylane_rag_enhanced.jsonl \
-  --source pennysynth \
-  --prefer-qnode \
-  --skip-mutant \
-  --out-dir equivalence_probe/metrex_like/filter_out/pennysynth_full
+```powershell
+cd metrex_like
+python filter_corpus.py `
+  --input path\to\pennylane_rag_enhanced.jsonl `
+  --source pennysynth `
+  --prefer-qnode `
+  --skip-mutant `
+  --out-dir ..\results\pennysynth_full
 ```
 
-`--skip-mutant` only omits the soft flag (faster). It does **not** change keep/reject.
+`--skip-mutant` only skips the optional flag. It does not change which programs are kept.

@@ -1,156 +1,182 @@
-# Quantum circuit equivalence for a VeriThoughts-style study
+# PennyLane circuit equivalence
 
-This repository is the **first stage** of adapting [VeriThoughts](https://arxiv.org/abs/2505.20302) (formal verification + LLMs for Verilog) to **PennyLane quantum programs**.
+This repository checks whether two PennyLane programs implement the same quantum circuit.
 
-It answers the question: *can [MQT QCEC](https://github.com/cda-tum/qcec) play the role of Yosys, and can we build a MetRex-like set of checkable circuits from lab data?*
+The check has two layers:
 
-It does **not** reproduce the full VeriThoughts data-generation and training pipeline. That distinction is important if you are comparing numbers to the paper.
+1. **MQT QCEC**, a formal equivalence checker. It returns equivalent or not equivalent.
+2. **Numerical metrics** computed from the two extracted unitaries (fidelity and Pauli residuals). Each metric is turned into the same kind of yes/no decision, so it can be compared with QCEC on the same pairs.
 
-| VeriThoughts | This repo |
-|---|---|
-| MetRex (synthesizable Verilog) | Filtered PennyLane QNodes (`results/pennysynth_full/kept.jsonl`, **444** samples) |
-| Yosys equivalence | **MQT QCEC** on extracted Qiskit circuits |
-| Generate question \(Q\) from gold \(V\) | **Not done** — we reused existing PennySynth instructions |
-| Reasoning trace \(R\) + new code \(V^*\) | Off-the-shelf OpenRouter models; **no CoT stored** |
-| Label \(L_C = E(V, V^*)\) | Yes: QCEC(gold circuit, model circuit) |
-| Train on \(\{V, Q, R, V^*, L_C\}\) | **Not done** |
-
-
+The data are lab PennySynth programs. A model is asked to rewrite each instruction in PennyLane. Gold code and model code are both turned into circuits, then compared.
 
 ---
 
-## What we implemented
+## What was done
 
 ```text
-PennySynth JSONL
+PennySynth programs
         │
         ▼
-  extract QNode → OpenQASM / Qiskit → QCEC self-check (C ≡ C)
+Keep only programs we can turn into a small circuit
+and that QCEC accepts as equivalent to themselves
         │
-        ├── reject  (not checkable)
-        └── keep    (444 programs)     ← MetRex analogue
-                │
-                ├── oracle:  QCEC(gold, gold)     ~99% equivalent
-                └── models:  QCEC(gold, model)    labeled equivalent / not / failed
+        ▼
+444 kept programs
+        │
+        ├── Gold vs gold (pipeline check)          → QCEC
+        ├── Model vs gold (gpt-4o-mini, gpt-4o)    → QCEC
+        ├── Look at why extracts fail
+        ├── Look at how far the non-equivalent circuits are
+        └── Same model-vs-gold pairs               → numerical metrics
 ```
 
-1. **Keep rule (frozen).** A sample is kept only if we can extract a circuit, export it, stay within size limits (≤12 qubits, ≤200 ops), and QCEC reports the circuit equivalent to itself. Mutant checks are flags only; they never reject a sample. Details: [`docs/KEEP_RULE.md`](docs/KEEP_RULE.md).
-2. **Oracle loop.** On the kept set, gold code is compared to itself through extract → QCEC. This tests the pipeline, not a model.
-3. **Model scoring (optional eval, not the paper).** An LLM writes PennyLane from the **existing** instruction; we extract its circuit and compare it to the gold circuit with QCEC.
-4. **Error analysis.** Failed extracts vs not-equivalent circuits; among not-equivalent, close mutants vs different programs.
+### 1. Build a checkable set
 
+PennySynth has many programs that are not a single runnable circuit (training loops, missing QNodes, devices we cannot export).
 
+A program is **kept** only if all of this works:
+
+- a QNode can be lifted from the code
+- the circuit exports to OpenQASM and Qiskit
+- it has at most 12 qubits and 200 operations
+- QCEC reports the circuit equivalent to itself
+
+Details: [docs/KEEP_RULE.md](docs/KEEP_RULE.md), [docs/FILTER_PIPELINE.md](docs/FILTER_PIPELINE.md).
+
+From 3416 QNode-looking PennySynth rows, **444 (13%)** were kept. The kept rows are `results/pennysynth_full/kept.jsonl`.
+
+### 2. Check the pipeline on gold code
+
+Each kept program is extracted twice and compared with QCEC (gold versus gold).
+
+**441 / 444 (about 99%)** are equivalent. The extractor and QCEC agree on this filtered set. Three rows are not equivalent under this second pass; they are recorded in `loop_oracle.jsonl`.
+
+### 3. Score model programs with QCEC
+
+For each kept instruction, an OpenRouter model writes PennyLane. That code is extracted and compared with the gold circuit.
+
+| Model | Equivalent | Not equivalent | Extract failed | Equivalent / 444 |
+|---|---:|---:|---:|---:|
+| gpt-4o-mini | 150 | 227 | 67 | **34%** |
+| gpt-4o | 162 | 187 | 95 | **37%** |
+
+Among pairs that both extract: mini **40%** equivalent (150/377), gpt-4o **46%** (162/349).
+
+gpt-4o is only a small gain. It writes slightly more circuits that match gold, and more code that does not extract.
+
+The current mini scores are `loop_openrouter_v2.jsonl`. An earlier extractor left 124 extract failures and 124 equivalents (28%). Fixes in `extract_circuit.py` (scalar parameters, `.inv()` rewritten to `qml.adjoint`) recovered circuits and moved the mini result to the table above. See [docs/FAIL_ANALYSIS.md](docs/FAIL_ANALYSIS.md).
+
+### 4. What the non-equivalent circuits look like
+
+On pairs QCEC calls not equivalent, gate lists were compared (names and wires, not a second checker).
+
+| | gpt-4o-mini (227) | gpt-4o (187) |
+|---|---:|---:|
+| Same gates, different angles | 23% | 30% |
+| About one extra, missing, or reordered gate | 35% | 35% |
+| **Close to gold (those two)** | **59%** | **65%** |
+| Same width, clearly different skeleton | 13% | 13% |
+| Different number of qubits | 28% | 22% |
+
+Most wrong answers are near the gold circuit: a wrong angle, one extra gate, or the wrong width. They are not a different algorithm. See [docs/NEQ_ANALYSIS.md](docs/NEQ_ANALYSIS.md).
+
+### 5. Assess the same pairs with numerical metrics
+
+On the **gpt-4o-mini** predictions, each extracted pair is scored again with numerical tests. QCEC is still computed on that run, so every row has both answers.
+
+Full table and how to read a row: [docs/SIDE_BY_SIDE_EQUIVALENCE.md](docs/SIDE_BY_SIDE_EQUIVALENCE.md).  
+What each number means: [docs/NUMERICAL_METRICS.md](docs/NUMERICAL_METRICS.md).
+
+On **377** extracted pairs:
+
+| Method | Equivalent | Not equivalent | No decision |
+|---|---:|---:|---:|
+| **QCEC** | **150** | **227** | 0 |
+| Process fidelity | 139 | 163 | 75 |
+| Process fidelity, stricter cutoff \(10^{-15}\) | 138 | 164 | 75 |
+| Hilbert–Schmidt residual \(1 - F\) | 139 | 163 | 75 |
+| Pauli miter residual | 139 | 163 | 75 |
+| Largest Pauli-generator residual (all generators) | 138 | 164 | 75 |
+| Minimum basis-state fidelity | 139 | 163 | 75 |
+| Residual of a single \(X\) on qubit 0 | 188 | 114 | 75 |
+
+The 75 “no decision” rows are pairs where the dense unitary or Pauli expansion did not run (width mismatch, or the circuit was too large for that calculation). QCEC still labeled them.
+
+On the **302** pairs where every metric ran, process fidelity, the Pauli miter, the full generator residual, and basis-state fidelity agree with QCEC on **99.7–100%** of pairs.
+
+Averages on those 302 pairs:
+
+| | QCEC equivalent (138) | QCEC not equivalent (164) |
+|---|---:|---:|
+| Process fidelity (1 = same) | 1.00 | 0.47 |
+| Pauli miter residual (0 = same) | 0.00 | 0.64 |
+| Largest generator residual (0 = same) | 0.00 | 1.11 |
+
+When QCEC says the circuits match, the numbers sit at a perfect match. When QCEC says they differ, fidelity drops to about one half and the residuals are clearly above zero.
+
+**The single-generator residual cannot be used alone.** It calls 188 pairs equivalent, including pairs QCEC rejects, because one Pauli direction can match while the rest of the circuit does not.
 
 ---
 
-## Main results
+## How to read the results
 
-### Checkable fraction (PennySynth)
-
-Source: lab [PennySynth](https://github.com/eBrain4Everyone/PennySynth) (`pennylane_rag_enhanced.jsonl`). We first keep QNode-looking rows (`@qml.qnode` + `default.qubit` / `lightning.qubit`).
-
-| | Count |
-|---|---:|
-| QNode-looking candidates | 3416 |
-| **Kept (QCEC-checkable)** | **444** |
-| **Checkable fraction** | **13%** |
-
-Reject reasons (among 2972): tape/export failed 1732, no QNode after lift 890, truncated 261, `while` 66, unsupported device 23. Full counts: `results/pennysynth_full/summary.json`.
-
-PennyLang was only a 100-sample pilot (~7% kept) and is **not** the main corpus.
-
-### Oracle (gold vs gold)
-
-On all 444 kept samples: **441 / 444 equivalent (~99%)**. Extract + QCEC works on this filtered set.
-
-### Off-the-shelf models vs gold (same 444, current extractor)
-
-These are **not** VeriThoughts scores. Questions were not generated from gold; traces were not saved; no model was trained.
-
-| Candidate | Equivalent | Not equivalent | Extract failed | Rate |
-|---|---:|---:|---:|---:|
-| `openai/gpt-4o-mini` | 150 | 227 | 67 | **34%** |
-| `openai/gpt-4o` | 162 | 187 | 95 | **37%** |
-
-Among circuits we could extract: mini 40% equivalent (150/377), gpt-4o 46% (162/349).
-
-**Not-equivalent split** (extract failures ignored). Most wrong programs are close to gold, not a different algorithm:
-
-| | mini (227) | gpt-4o (187) |
-|---|---:|---:|
-| Same skeleton, different angles | 23% | 30% |
-| ±1 gate / small reorder | 35% | 35% |
-| **Close (those two)** | **59%** | **65%** |
-| Same width, far skeleton | 13% | 13% |
-| Wrong qubit count | 28% | 22% |
-
-Write-ups: [`docs/FAIL_ANALYSIS.md`](docs/FAIL_ANALYSIS.md), [`docs/NEQ_ANALYSIS.md`](docs/NEQ_ANALYSIS.md). Meeting note: [`docs/STATUS.md`](docs/STATUS.md).
+- **13% kept** means most PennySynth programs are not in a form this checker can use. The 444 are the working set.
+- **99% gold versus gold** means the checker is reliable on that set. Low model scores are not a broken checker.
+- **34–37% model equivalent** is the share of instructions whose model program matches the gold circuit under QCEC.
+- **About 60% of the mismatches are close.** The model often has the right shape and misses an angle, a gate, or the qubit count.
+- **Numerical metrics** are a second way to say equivalent or not. On circuits small enough to expand, they match QCEC, except the single-generator test.
 
 ---
 
 ## Repository layout
 
 ```text
-pennylane-qcec-equivalence/
-  README.md
-  requirements.txt
-  .env.example                 # copy to metrex_like/.env; never commit .env
-  metrex_like/                 # runnable code
-    extract_circuit.py         # PennyLane snippet → Qiskit circuit
-    filter_corpus.py           # keep / reject (MetRex analogue)
-    run_verithoughts_loop.py   # QCEC labels on kept samples
-    generate_openrouter.py     # optional LLM generation
-    analyze_neq.py             # close-mutant vs different-circuit
-    circuits_lib.py            # tiny hand-written QCEC demo circuits
-    run_metrex_probe.py        # demo: rewrite ≡ , mutant ≢
-  docs/                        # keep rule, pipeline, analyses
-  results/pennysynth_full/     # kept corpus + scores (no API keys)
+README.md
+requirements.txt
+.env.example
+metrex_like/                 code
+  extract_circuit.py         PennyLane text → Qiskit circuit
+  filter_corpus.py           keep / reject
+  run_verithoughts_loop.py   QCEC on kept samples
+  generate_openrouter.py     ask a model for PennyLane
+  analyze_neq.py             close vs different circuits
+  equivalence_metrics.py     numerical metrics
+  run_equivalence_metrics.py QCEC + metrics on the same pairs
+  circuits_lib.py            small hand-written demo circuits
+  run_metrex_probe.py        demo: rewrite matches, mutant does not
+docs/                        rules, analyses, metric definitions
+results/pennysynth_full/     kept data and saved scores
 ```
 
-**Intentionally not in this repo**
-
-- API keys (`.env`)
-- Raw PennySynth / PennyLang dumps (large, lab-owned; we ship the **444 kept** rows)
-- Rejected JSONL (~25k leftover programs)
-- Pilot filter runs (100-sample slices)
-- QHack notebook extraction and pairwise probes
-- `__pycache__`
+Not included: API keys, the raw PennySynth dump, rejected programs, and earlier 100-row pilots.
 
 ---
 
 ## Setup
 
-Python 3.11 recommended.
+Python 3.11.
 
 ```powershell
-git clone <this-repo-url>
+git clone https://github.com/MeriemTerki/pennylane-qcec-equivalence.git
 cd pennylane-qcec-equivalence
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-Linux / macOS: `source .venv/bin/activate`.
+To generate new model code, copy `.env.example` to `metrex_like/.env` and set `OPENROUTER_API_KEY`. Do not commit `.env`.
 
-Optional, only for model generation: copy `.env.example` to `metrex_like/.env` and set `OPENROUTER_API_KEY`. Do not commit `.env`.
+Commands below are run from `metrex_like/`.
 
----
-
-## How to run
-
-All commands below assume you are in `metrex_like/`.
-
-### 1. Sanity check (no dataset)
-
-Hand-written Bell / GHZ-style circuits: equivalent rewrite vs mutant.
+### Demo circuits
 
 ```powershell
 python run_metrex_probe.py
 ```
 
-### 2. Rebuild the kept corpus from PennySynth
+### Rebuild the kept set
 
-Point `--input` at your local copy of `pennylane_rag_enhanced.jsonl` (not in this repo).
+Requires a local copy of PennySynth `pennylane_rag_enhanced.jsonl`.
 
 ```powershell
 python filter_corpus.py `
@@ -161,9 +187,9 @@ python filter_corpus.py `
   --out-dir ..\results\pennysynth_full
 ```
 
-`--skip-mutant` only skips the soft flag; it does not change keep/reject. Expected: **444** kept, ~13% of QNode-like rows. Pipeline notes: [`docs/FILTER_PIPELINE.md`](docs/FILTER_PIPELINE.md).
+Expected: 444 kept.
 
-### 3. Oracle loop (gold vs gold)
+### QCEC: gold versus gold
 
 ```powershell
 python run_verithoughts_loop.py `
@@ -171,23 +197,25 @@ python run_verithoughts_loop.py `
   --out ..\results\pennysynth_full\loop_oracle.jsonl
 ```
 
-### 4. Score saved model programs (no API)
+### QCEC: saved model programs
 
 ```powershell
 python run_verithoughts_loop.py `
   --kept ..\results\pennysynth_full\kept.jsonl `
   --predictions ..\results\pennysynth_full\preds_openrouter.jsonl `
   --out ..\results\pennysynth_full\loop_openrouter_v2.jsonl
-
-python run_verithoughts_loop.py `
-  --kept ..\results\pennysynth_full\kept.jsonl `
-  --predictions ..\results\pennysynth_full\preds_openrouter_gpt4o.jsonl `
-  --out ..\results\pennysynth_full\loop_openrouter_gpt4o.jsonl
 ```
 
-### 5. Generate new predictions (needs OpenRouter key)
+### QCEC and numerical metrics together
 
-Writes a **new** file. Do not overwrite `preds_openrouter.jsonl` if you still want the mini baseline.
+```powershell
+python run_equivalence_metrics.py `
+  --kept ..\results\pennysynth_full\kept.jsonl `
+  --predictions ..\results\pennysynth_full\preds_openrouter.jsonl `
+  --out ..\results\pennysynth_full\equiv_metrics_mini.jsonl
+```
+
+### New model programs
 
 ```powershell
 python generate_openrouter.py `
@@ -198,67 +226,35 @@ python generate_openrouter.py `
   --resume
 ```
 
-Default `--limit` is 10. Pass `--limit 444` for the full kept set.
-
-### 6. Classify not-equivalent circuits
-
-```powershell
-python analyze_neq.py `
-  --kept ..\results\pennysynth_full\kept.jsonl `
-  --predictions ..\results\pennysynth_full\preds_openrouter.jsonl `
-  --loop ..\results\pennysynth_full\loop_openrouter_v2.jsonl `
-  --out ..\results\pennysynth_full\neq_mini.json `
-  --tag gpt-4o-mini
-```
+`--limit` defaults to 10.
 
 ---
 
-## Data
+## Saved outputs
+
+Described in [results/pennysynth_full/README.md](results/pennysynth_full/README.md).
+
+| File | Content |
+|---|---|
+| `kept.jsonl` | 444 checkable programs |
+| `summary.json` | keep / reject counts |
+| `loop_oracle_summary.json` | gold versus gold |
+| `loop_openrouter_v2_summary.json` | gpt-4o-mini, current extractor |
+| `loop_openrouter_gpt4o_summary.json` | gpt-4o |
+| `equiv_metrics_mini.jsonl` | one row per sample: QCEC decision, metric values, metric decisions |
+| `equiv_metrics_mini_summary.json` | agreement and averages |
+
+---
+
+## Data fields
 
 | Field | Meaning |
 |---|---|
-| `id` | e.g. `pennysynth_130` |
-| `instruction` | Natural-language task (from PennySynth, not regenerated) |
-| `code` | Gold PennyLane program |
-| Predictions JSONL | `{id, model, instruction, code}` |
+| `id` | sample id, for example `pennysynth_130` |
+| `instruction` | task text from PennySynth |
+| `code` | gold PennyLane program |
+| prediction row | `{id, model, instruction, code}` for the model program |
 
-Upstream data (not shipped here):
+Upstream corpus: [PennySynth](https://github.com/eBrain4Everyone/PennySynth) (eBRAIN Lab, NYU Abu Dhabi). PennyLang was only a small pilot and is not part of these results.
 
-- [PennySynth](https://github.com/eBrain4Everyone/PennySynth)
-- [PennyLang](https://github.com/eBrain4Everyone/Pennylang) (secondary)
-
----
-
-## Paper equivalence metrics (supervisor request)
-
-Local PDFs in `Papers/`. See [`docs/PAPERS_AND_METRICS.md`](docs/PAPERS_AND_METRICS.md).
-
-On the **same** gold vs model pairs as your QCEC run:
-
-1. **QCEC** — formal label (`run_verithoughts_loop.py`)
-2. **Numeric metrics** from the papers — Pauli miter \(r_M\), generator \(r_G\), process fidelity, etc. (`run_equivalence_metrics.py`)
-
-Each JSONL row has `metrics` floats next to `qcec.decision` for tables/plots. VeriThoughts remains the Verilog inspiration; these PDFs supply the **equivalence formulas**.
-
-**Start here if you are lost:** [`docs/METRICS_RESULTS_REPORT.md`](docs/METRICS_RESULTS_REPORT.md) (generated after `run_equivalence_metrics.py`).
-
-## What a fair next step looks like (not in this repo yet)
-
-To follow VeriThoughts **the same way** (and only then compare *methods*, not raw percentages):
-
-1. Gold circuit \(V\) = a kept sample (already here).
-2. Generate a new question \(Q\) **from** \(V\) (do not reuse the dataset instruction as if it were that \(Q\)).
-3. A reasoning model produces \(R\) and new PennyLane \(V^*\).
-4. \(L_C \leftarrow\) QCEC\((V, V^*)\).
-5. Store \(\{V, Q, R, V^*, L_C\}\). Training / hold-out eval come after that.
-
-Even then, numbers will differ from the paper (PennyLane vs Verilog, 444 vs ~20k, QCEC vs Yosys). The comparable object is the **pipeline shape**, not 34% vs their pass@k.
-
----
-
-## References
-
-- Pinckney, N. et al. *VeriThoughts: Enabling Automated Verilog Code Generation using Reasoning and Formal Verification.* arXiv:2505.20302.
-- Abdelatty, M. et al. *MetRex* (synthesizable Verilog corpus used by VeriThoughts).
-- Burgholzer, L. & Wille, R. *MQT QCEC* — quantum circuit equivalence checking.
-- PennySynth / PennyLang — eBRAIN Lab, NYUAD.
+Equivalence checking uses [MQT QCEC](https://github.com/cda-tum/qcec).
